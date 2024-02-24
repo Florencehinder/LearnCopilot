@@ -28,17 +28,51 @@ app.post("/generate-message", async (req, res) => {
       temperature: 0.1,
       system: spacetrim(
         (block) => `
-        You are an expert professor in python and you are tutoring a student to deeply understand the course notes from the textbook - Automate the Boring Stuff with Python, 2nd Edition: Practical Programming for Total Beginners. Ask the students questions to improve their understanding of the textbook, ask questions about the most important topics and ask increasing difficult questions if they answer them well, make the questions easier if they are struggling. 
-
-        Before asking a question, please think through the course content step by step within <thinking></thinking> XML tags.
-
-        Ask me questions about <chapter>1</chapter> to test my understanding of the content.
-
-        Keep asking questions until you think the main concepts of the book are fully understood.
-
+            You are an expert professor in programming and you are tutoring a student to deeply understand the course notes from the textbook - Automate the Boring Stuff with Python, 2nd Edition: Practical Programming for Total Beginners.
         `
       ),
-      messages: [{ role: "user", content }],
+      messages: [
+        {
+          role: "user",
+          content: spacetrim(
+            (block) => `
+
+
+                Ask questions about the most important topics and ask increasing difficult questions if the answers are good, make the questions easier if they are struggling. 
+
+                Before asking a question, please think through the course content step by step within <thinking></thinking> XML tags.
+                
+                Ask me questions about <chapter>1</chapter> to test my understanding of the content.
+                
+                Keep asking questions until you think the main concepts of the book are fully understood.
+                
+                Add any feedback in <feedback></feedback>
+                Ask a question in <question></question>
+                
+
+            
+            
+            
+
+
+                Ask the student questions about <chapter>1</chapter> to improve my understanding of the textbook, ask questions about the most important topics and ask increasing difficult questions if they answer them well, make the questions easier if they are struggling. 
+
+                Before asking a question, please think through the course content step by step within <thinking></thinking> XML tags.
+
+                Keep asking questions until you think the main concepts of the book are fully understood.
+
+                Add any feedback in <feedback></feedback>
+                Ask a question in <question>What is the topic of this text?</question>
+
+                The user is responding to the question:
+                <response>
+                
+                </response>
+
+            `
+          ),
+        },
+      ],
     });
     res.json(msg);
   } catch (error) {
@@ -47,10 +81,11 @@ app.post("/generate-message", async (req, res) => {
   }
 });
 
+/*
 // message being sent to the react front end
-app.get("/test", (req, res) => {
+app.get("/chat-test", (req, res) => {
   const requestMessage = req.query["requestMessage"];
-  res.status(200).json({ responseMessage: `YOU HAVE SAID ${requestMessage}` });
+  res.status(200).json( `YOU HAVE SAID ${requestMessage}` );
 });
 
 // Example GET route
@@ -74,20 +109,15 @@ app.get("/chat", async (req, res) => {
 
           Ask me questions about <chapter>1</chapter> to test my understanding of the content.    
 
-          Keep asking questions until you think the main concepts of <chapter>1</chapter> are fully understood.
-          
-          Add any feedback in <feedback></feedback>
-          Ask a question in <question></question>
-
-          The question for the user is:`
+          Keep asking questions until you think the main concepts of <chapter>1</chapter> are fully understood.`
     ),
     messages: [
       {
         role: "user",
         content: spacetrim(
           (block) => `
-          Add any feedback in <feedback></feedback>
-          Ask a question in <question></question>
+            Add any feedback in <feedback></feedback>
+            Ask a question in <question></question>
             ${block(requestMessage)}
         
         `
@@ -100,6 +130,8 @@ app.get("/chat", async (req, res) => {
 
   res.status(200).json(responseMessage.content[0].text);
 });
+
+*/
 
 app.get("/sendpdf", (req, res) => {
   res.status(200).json({ message: "Server is up and running!" });
