@@ -1,16 +1,10 @@
 import React, { useState } from "react";
-import Anthropic from "@anthropic-ai/sdk";
 
 function App() {
   const [fileContent, setFileContent] = useState("");
+  const [currentInput, setCurrentInput] = useState("");
   const [isFileUploaded, setIsFileUploaded] = useState(false);
   const [messages, setMessages] = useState([]); // Initialize messages state
-  const [currentInput, setCurrentInput] = useState(""); // State to store current input
-
-  // Assuming the apiKey is set in your environment variables as REACT_APP_ANTHROPIC_API_KEY
-  const anthropic = new Anthropic({
-    apiKey: process.env.REACT_APP_ANTHROPIC_API_KEY,
-  });
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -34,25 +28,40 @@ function App() {
     setMessages([...messages, userMessage]);
 
     try {
-      const msg = await anthropic.messages.create({
-        model: "claude-2.1",
-        max_tokens: 4000,
-        temperature: 0.1,
-        system: "Your system description here...",
-        messages: [{ role: "user", content: currentInput }],
+      const response = await fetch("http://localhost:5002/generate-message", {
+        // Assuming your proxy setup is correct
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: currentInput }),
       });
 
-      if (msg && msg.responses && msg.responses.length > 0) {
-        const responseText = msg.responses[0].content;
-        const botMessage = {
-          id: messages.length + 2,
-          text: responseText,
-          sender: "bot",
-        };
-        setMessages((prevMessages) => [...prevMessages, botMessage]);
+      console.log({ response });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const msg = await response.json();
+
+      console.log({ msg });
+
+      if (
+        !(msg && msg.content && msg.content.length > 0 && msg.content[0].text)
+      ) {
+        throw new Error("Unexpected message response");
+      }
+      // Assuming msg.responses[0] contains the response text you want to display
+      const responseText = msg.content[0].text; // Adjust according to actual structure
+      const botMessage = {
+        id: messages.length + 2,
+        text: responseText,
+        sender: "bot",
+      };
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
     } catch (error) {
-      console.error("Error interacting with Claude:", error);
+      console.error("Error interacting with server:", error);
     }
 
     setCurrentInput("");
@@ -92,6 +101,7 @@ function App() {
             <div className="flex flex-col h-full">
               <h2 className="text-xl font-semibold mb-4">Chatbot</h2>
               <div className="flex-grow overflow-y-auto mb-4">
+                <p>What is the topic of this text?</p>
                 {messages.map((message) => (
                   <div
                     key={message.id}
