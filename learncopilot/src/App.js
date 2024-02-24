@@ -5,7 +5,6 @@ function App() {
   const [fileContent, setFileContent] = useState("");
   const [isFileUploaded, setIsFileUploaded] = useState(false);
   const [messages, setMessages] = useState([]); // Initialize messages state
-  const [currentInput, setCurrentInput] = useState(""); // State to store current input
 
   // Assuming the apiKey is set in your environment variables as REACT_APP_ANTHROPIC_API_KEY
   const anthropic = new Anthropic({
@@ -34,13 +33,18 @@ function App() {
     setMessages([...messages, userMessage]);
 
     try {
-      const msg = await anthropic.messages.create({
-        model: "claude-2.1",
-        max_tokens: 4000,
-        temperature: 0.1,
-        system: "Your system description here...",
-        messages: [{ role: "user", content: currentInput }],
-      });
+      const response = await fetch(
+        "http://localhost:5002/chat?requestMessage",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content: currentInput }),
+        }
+      );
+
+      const msg = await response.json();
 
       if (msg && msg.responses && msg.responses.length > 0) {
         const responseText = msg.responses[0].content;
